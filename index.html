@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Envíos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f7f6f3;--surface:#ffffff;--border:#e5e3dd;--border2:#d0cdc6;
+    --text:#1a1917;--text2:#6b6860;--text3:#a09d97;
+    --green:#1a7a4a;--green-bg:#edf7f2;--green-border:#b8e0cc;
+    --amber:#92600a;--amber-bg:#fdf6e3;--amber-border:#f0d78a;
+    --red:#b53a2f;--red-bg:#fdf0ee;--red-border:#f5c4be;
+    --blue:#1a5fa8;--blue-bg:#eef4fd;--blue-border:#b8d4f5;
+    --radius:10px;--radius-sm:6px;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+  .container{max-width:960px;margin:0 auto;padding:24px 20px}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+  .logo{font-size:18px;font-weight:600;letter-spacing:-0.3px}
+  .logo span{color:var(--text3)}
+  .fecha{font-size:12px;color:var(--text3);margin-top:2px}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);transition:all 0.15s;white-space:nowrap}
+  .btn:hover{background:var(--bg);border-color:var(--text3)}
+  .btn-primary{background:var(--text);color:#fff;border-color:var(--text)}
+  .btn-primary:hover{opacity:0.87;background:var(--text)}
+  .btn-green{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+  .btn-green:hover{background:#d8f0e5}
+  .btn-sm{padding:4px 10px;font-size:12px}
+  .btn-icon{padding:5px 8px;border-radius:var(--radius-sm)}
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:24px}
+  .tab{padding:9px 16px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+  .tab:hover{color:var(--text)}
+  .tab.active{color:var(--text);border-bottom-color:var(--text);font-weight:500}
+  .badge{border-radius:99px;padding:1px 7px;font-size:11px;margin-left:4px;font-weight:500}
+  .badge-warn{background:var(--amber-bg);color:var(--amber)}
+  .badge-ok{background:var(--green-bg);color:var(--green)}
+  .badge-info{background:var(--blue-bg);color:var(--blue)}
+  .section{display:none}.section.active{display:block}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px}
+  .card-table{padding:0;overflow:hidden}
+  .upload-area{border:2px dashed var(--border2);border-radius:var(--radius);padding:40px;text-align:center;cursor:pointer;transition:all 0.15s}
+  .upload-area:hover{border-color:var(--text3);background:var(--bg)}
+  .upload-icon{font-size:36px;margin-bottom:12px;display:block}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;padding:8px 14px;color:var(--text2);font-weight:500;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:0.4px}
+  td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fafaf8}
+  .pill{padding:3px 9px;border-radius:99px;font-size:11px;font-weight:500}
+  .pill-pend{background:var(--amber-bg);color:var(--amber)}
+  .pill-conf{background:var(--green-bg);color:var(--green)}
+  .pill-desp{background:var(--blue-bg);color:var(--blue)}
+  .pill-no{background:var(--red-bg);color:var(--red)}
+  .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+  .metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+  .metric-label{font-size:12px;color:var(--text2);margin-bottom:6px}
+  .metric-value{font-size:26px;font-weight:600;letter-spacing:-0.5px}
+  .actions-bar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+  input.ifield,select.ifield{padding:6px 10px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;width:100%}
+  input.ifield:focus,select.ifield:focus{outline:none;border-color:var(--text3)}
+  .etiqueta{background:var(--surface);border:2px solid var(--border2);border-radius:var(--radius);padding:18px;font-size:13px;line-height:2.1}
+  .etiqueta-nombre{font-size:16px;font-weight:600;margin-bottom:8px;letter-spacing:-0.2px}
+  .etiqueta-total{font-size:17px;font-weight:600;margin-top:10px;color:var(--text)}
+  .etq-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .row-actions{display:flex;gap:5px}
+  .step-row{display:flex;align-items:center;gap:8px;margin-bottom:24px}
+  .step{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text3)}
+  .snum{width:24px;height:24px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
+  .step.done .snum{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+  .step.active .snum{background:var(--text);color:#fff;border-color:var(--text)}
+  .step.active{color:var(--text);font-weight:500}
+  .sline{flex:1;height:1px;background:var(--border)}
+  .banner{border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;font-size:13px;display:flex;align-items:center;gap:10px}
+  .banner-warn{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber)}
+  .overlay{position:fixed;inset:0;background:rgba(20,18,15,0.5);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(2px)}
+  .modal{background:var(--surface);border-radius:var(--radius);padding:24px;width:460px;max-width:95vw;border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,0.12)}
+  .modal h3{font-size:16px;font-weight:600;margin-bottom:16px;letter-spacing:-0.2px}
+  .field-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+  .field-group label{font-size:12px;color:var(--text2);font-weight:500}
+  .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+  .proc-modal{text-align:center;padding:32px 24px}
+  .proc-icon{font-size:40px;display:block;margin-bottom:14px;animation:spin 1.5s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .proc-title{font-size:15px;font-weight:600;margin-bottom:6px}
+  .proc-sub{font-size:13px;color:var(--text2);margin-bottom:14px}
+  .lbar{height:3px;background:var(--bg);border-radius:99px;overflow:hidden}
+  .lbar-inner{height:100%;background:var(--text);border-radius:99px;width:0;transition:width 0.08s}
+  .section-divider{font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px}
+  @media print{
+    .tabs,.actions-bar,.btn,.header-actions{display:none!important}
+    .section{display:block!important}
+    .etq-grid{grid-template-columns:1fr 1fr}
+    body{background:white}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <div class="logo">Envíos <span>/ gestión diaria</span></div>
+      <div class="fecha" id="fecha-hoy"></div>
+    </div>
+    <div class="header-actions" style="display:flex;gap:8px">
+      <button class="btn btn-sm" onclick="abrirConfig()">⚙ Configurar</button>
+    </div>
+  </header>
+
+  <div id="cfg-banner" class="banner banner-warn" style="display:none">
+    ⚠ Configurá tu email y URLs de Make antes de enviar mails.
+    <button class="btn btn-sm" style="margin-left:auto" onclick="abrirConfig()">Configurar</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('cargar',this)">📋 Planilla</button>
+    <button class="tab" onclick="showTab('pedidos',this)">Pedidos <span class="badge badge-warn" id="b-pend">0</span></button>
+    <button class="tab" onclick="showTab('confirmados',this)">Confirmados <span class="badge badge-ok" id="b-conf">0</span></button>
+    <button class="tab" onclick="showTab('etiquetas',this)">Etiquetas <span class="badge badge-info" id="b-etq">0</span></button>
+    <button class="tab" onclick="showTab('clientes',this)">👥 Clientes</button>
+  </div>
+
+  <div id="sec-cargar" class="section active">
+    <div class="step-row">
+      <div class="step active" id="s1"><div class="snum">1</div><span>Subir foto</span></div>
+      <div class="sline"></div>
+      <div class="step" id="s2"><div class="snum">2</div><span>Revisar datos</span></div>
+      <div class="sline"></div>
+      <div class="step" id="s3"><div class="snum">3</div><span>Enviar mails</span></div>
+    </div>
+    <div id="upload-panel">
+      <div class="upload-area" onclick="document.getElementById('fi').click()">
+        <span class="upload-icon">📷</span>
+        <p style="font-weight:600;font-size:15px;margin-bottom:6px">Subir foto de la planilla</p>
+        <p style="color:var(--text2);font-size:13px">Hacé clic o arrastrá la foto acá — la IA extrae los pedidos automáticamente</p>
+      </div>
+      <input type="file" id="fi" accept="image/*" style="display:none" onchange="procesarFoto(this)">
+      <p style="font-size:12px;color:var(--text3);margin-top:10px">💡 Asegurate de que la foto tenga buena luz y se lean bien los números</p>
+    </div>
+    <div id="preview-panel" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <p style="font-weight:600">Pedidos detectados — revisá y corregí si hace falta</p>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm" onclick="agregarFila()">+ Agregar fila</button>
+          <button class="btn btn-sm btn-primary" onclick="confirmarPlanilla()">Confirmar y enviar mails →</button>
+        </div>
+      </div>
+      <div class="card card-table">
+        <table>
+          <thead><tr>
+            <th style="width:60px">Bultos</th>
+            <th style="width:95px">Nº pedido</th>
+            <th>Nombre</th>
+            <th style="width:115px">Valor</th>
+            <th style="width:85px">Notas</th>
+            <th style="width:44px"></th>
+          </tr></thead>
+          <tbody id="tb-prev"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="sec-pedidos" class="section">
+    <div class="metric-grid">
+      <div class="metric"><div class="metric-label">Total pedidos</div><div class="metric-value" id="m-tot">0</div></div>
+      <div class="metric"><div class="metric-label">Pendientes</div><div class="metric-value" style="color:var(--amber)" id="m-pend">0</div></div>
+      <div class="metric"><div class="metric-label">Confirmados</div><div class="metric-value" style="color:var(--green)" id="m-conf">0</div></div>
+      <div class="metric"><div class="metric-label">No confirmaron</div><div class="metric-value" style="color:var(--red)" id="m-no">0</div></div>
+    </div>
+    <div class="card card-table">
+      <table>
+        <thead><tr>
+          <th>Nº pedido</th><th>Nombre</th>
+          <th style="width:65px">Bultos</th>
+          <th style="width:110px">Valor</th>
+          <th style="width:105px">Estado</th>
+          <th style="width:110px">Acción</th>
+        </tr></thead>
+        <tbody id="tb-ped"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="sec-confirmados" class="section">
+    <div class="actions-bar">
+      <button class="btn btn-primary" onclick="generarTodas()">🏷 Generar todas las etiquetas</button>
+      <button class="btn btn-green" onclick="despacharTodos()">✉ Enviar todos los mails de despacho</button>
+    </div>
+    <div class="card card-table">
+      <table>
+        <thead><tr>
+          <th>Nº pedido</th><th>Nombre</th><th>Localidad</th>
+          <th style="width:115px">Total c/envío</th>
+          <th style="width:85px">Etiqueta</th>
+          <th style="width:105px">Despacho</th>
+        </tr></thead>
+        <tbody id="tb-conf"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="sec-etiquetas" class="section">
+    <div class="actions-bar">
+      <button class="btn btn-primary" onclick="window.print()">🖨 Imprimir todas</button>
+    </div>
+    <div class="etq-grid" id="etq-cont"></div>
+  </div>
+
+  <div id="sec-clientes" class="section">
+    <div class="actions-bar">
+      <button class="btn btn-primary" onclick="abrirNuevoCliente()">+ Nuevo cliente</button>
+      <span style="font-size:12px;color:var(--text2)" id="cli-count"></span>
+    </div>
+    <div class="card card-table">
+      <table>
+        <thead><tr>
+          <th>Nombre</th><th>Localidad</th><th>Dirección</th>
+          <th>Celular</th><th>Email</th><th style="width:50px"></th>
+        </tr></thead>
+        <tbody id="tb-cli"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal configuración -->
+<div id="modal-cfg" style="display:none">
+  <div class="overlay">
+    <div class="modal">
+      <h3>⚙ Configuración</h3>
+      <div class="field-group">
+        <label>Tu email de Outlook</label>
+        <input class="ifield" id="cfg-email" type="email" placeholder="tumail@outlook.com">
+      </div>
+      <div class="field-group">
+        <label>Tu nombre / empresa (aparece en los mails)</label>
+        <input class="ifield" id="cfg-nombre" placeholder="Nombre o empresa">
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+        <p class="section-divider">URLs de Make.com</p>
+        <div class="field-group">
+          <label>Webhook confirmación</label>
+          <input class="ifield" id="cfg-url1" placeholder="https://hook.us2.make.com/...">
+        </div>
+        <div class="field-group">
+          <label>Webhook despacho</label>
+          <input class="ifield" id="cfg-url2" placeholder="https://hook.us2.make.com/...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-sm" onclick="cerrarModal('modal-cfg')">Cancelar</button>
+        <button class="btn btn-sm btn-primary" onclick="guardarConfig()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal cliente -->
+<div id="modal-cliente" style="display:none">
+  <div class="overlay">
+    <div class="modal">
+      <h3 id="modal-cli-title">Datos del cliente</h3>
+      <div class="field-group"><label>Nombre</label><input class="ifield" id="cli-nombre"></div>
+      <div class="field-group"><label>Localidad</label><input class="ifield" id="cli-loc" placeholder="Ej: Moron, Palermo, Quilmes..."></div>
+      <div class="field-group"><label>Dirección</label><input class="ifield" id="cli-dir" placeholder="Calle, número, piso/depto"></div>
+      <div class="field-group"><label>Celular</label><input class="ifield" id="cli-cel" placeholder="11 XXXX-XXXX"></div>
+      <div class="field-group"><label>Email</label><input class="ifield" id="cli-email" type="email" placeholder="email@ejemplo.com"></div>
+      <div class="modal-footer">
+        <button class="btn btn-sm" onclick="cerrarModal('modal-cliente')">Cancelar</button>
+        <button class="btn btn-sm btn-primary" onclick="guardarCliente()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal procesando -->
+<div id="modal-proc" style="display:none">
+  <div class="overlay">
+    <div class="modal proc-modal">
+      <span class="proc-icon" id="proc-icon">⏳</span>
+      <p class="proc-title" id="proc-titulo">Procesando...</p>
+      <p class="proc-sub" id="proc-sub"></p>
+      <div class="lbar"><div class="lbar-inner" id="lbar"></div></div>
+    </div>
+  </div>
+</div>
+
+<div id="notif-cont"></div>
+
+<script>
+const WEBHOOK_CONF_DEFAULT="https://hook.us2.make.com/3ot9hmtclykymf372u4xouw303trbc8s";
+const WEBHOOK_DESP_DEFAULT="https://hook.us2.make.com/tocsyspoc78cxlbocmg4619f0anuxo1q";
+
+const TARIFAS={CABA:{1:4500,2:6500,3:9000},GBA0:{1:4000,2:6000,3:8000},GBA1:{1:7000,2:9000,3:11500},GBA2:{1:9500,2:11500,3:14000}};
+const ZONAS={
+  GBA0:["RAMOS MEJIA","SAN JUSTO","LOMAS DEL MIRADOR","CIUDADELA"],
+  GBA1:["AVELLANEDA","BANFIELD","CASTELAR","FLORIDA","HAEDO","ITUZAINGO","LANUS","LOMAS DE ZAMORA","MARTINEZ","MORON","MUNRO","OLIVOS","SAENZ PEÑA","SAN FERNANDO","SAN ISIDRO","SAN MARTIN","TEMPERLEY","VICENTE LOPEZ","VILLA BALLESTER","VILLA LYNCH","WILDE","WILLIAM MORRIS"],
+  GBA2:["ADROGUE","BERAZATEGUI","BERNAL","BURZACO","EZEIZA","FLORENCIO VARELA","GARIN","GLEW","GONZALEZ CATAN","GRAND BOURG","JOSE C PAZ","LONGCHAMPS","LOS POLVORINES","MALVINAS ARGENTINAS","MERLO","MONTE GRANDE","MORENO","QUILMES","SAN MIGUEL","TIGRE","TORTUGUITAS"]
+};
+const CABA_BARRIOS=["PALERMO","FLORES","BELGRANO","ALMAGRO","CABALLITO","RECOLETA","BALVANERA","VILLA CRESPO","NUNEZ","COLEGIALES","BOEDO","CONSTITUCION","SAN TELMO","RETIRO","ONCE","LINIERS","MATADEROS","VILLA URQUIZA","SAAVEDRA","CHACARITA"];
+
+function getZona(loc){
+  const u=(loc||"").toUpperCase().trim();
+  if(!u)return null;
+  if(u==="CABA"||u==="CAPITAL FEDERAL"||CABA_BARRIOS.includes(u))return"CABA";
+  for(const[z,lista]of Object.entries(ZONAS))if(lista.includes(u))return z;
+  return null;
+}
+function calcEnvio(loc,bultos){
+  const z=getZona(loc);
+  if(!z)return 0;
+  const b=Math.min(parseInt(bultos)||1,3);
+  return TARIFAS[z]?.[b]||0;
+}
+
+let pedidos=[];
+let clientes=[];
+let cfg={};
+let editCliIdx=-1;
+let lbarIv=null;
+
+try{clientes=JSON.parse(localStorage.getItem("cli_db")||"[]")}catch{}
+try{cfg=JSON.parse(localStorage.getItem("cfg_envios")||"{}")}catch{}
+
+function showTab(t,el){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  document.getElementById("sec-"+t).classList.add("active");
+  if(el)el.classList.add("active");
+}
+
+function notif(msg,tipo){
+  const n=document.createElement("div");
+  const colores={ok:"#1a7a4a",err:"#b53a2f",info:"#1a1917"};
+  n.style.cssText=`position:fixed;bottom:20px;right:20px;background:${colores[tipo]||colores.info};color:#fff;padding:11px 18px;border-radius:8px;font-size:13px;z-index:999;font-family:'DM Sans',sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.15);transition:opacity 0.3s`;
+  n.textContent=msg;
+  document.body.appendChild(n);
+  setTimeout(()=>{n.style.opacity="0";setTimeout(()=>n.remove(),300)},3000);
+}
+
+function abrirConfig(){
+  document.getElementById("cfg-email").value=cfg.email||"";
+  document.getElementById("cfg-nombre").value=cfg.nombre||"";
+  document.getElementById("cfg-url1").value=cfg.url1||WEBHOOK_CONF_DEFAULT;
+  document.getElementById("cfg-url2").value=cfg.url2||WEBHOOK_DESP_DEFAULT;
+  document.getElementById("modal-cfg").style.display="block";
+}
+function guardarConfig(){
+  cfg={
+    email:document.getElementById("cfg-email").value.trim(),
+    nombre:document.getElementById("cfg-nombre").value.trim(),
+    url1:document.getElementById("cfg-url1").value.trim(),
+    url2:document.getElementById("cfg-url2").value.trim()
+  };
+  localStorage.setItem("cfg_envios",JSON.stringify(cfg));
+  cerrarModal("modal-cfg");
+  document.getElementById("cfg-banner").style.display="none";
+  notif("✓ Configuración guardada","ok");
+}
+function cerrarModal(id){document.getElementById(id).style.display="none"}
+
+function mostrarProc(titulo,sub){
+  document.getElementById("proc-titulo").textContent=titulo;
+  document.getElementById("proc-sub").textContent=sub||"";
+  const lb=document.getElementById("lbar");lb.style.width="0";
+  document.getElementById("modal-proc").style.display="block";
+  let w=0;
+  lbarIv=setInterval(()=>{w=Math.min(w+1.2,88);lb.style.width=w+"%"},80);
+}
+function cerrarProc(){
+  clearInterval(lbarIv);
+  document.getElementById("lbar").style.width="100%";
+  setTimeout(()=>document.getElementById("modal-proc").style.display="none",400);
+}
+
+function setStep(n){
+  for(let i=1;i<=3;i++){
+    const s=document.getElementById("s"+i);
+    s.classList.remove("active","done");
+    if(i<n)s.classList.add("done");
+    if(i===n)s.classList.add("active");
+  }
+}
+
+async function enviarWebhook(url,payload){
+  const r=await fetch(url,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+  });
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return true;
+}
+
+async function procesarFoto(inp){
+  if(!inp.files[0])return;
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    const b64=e.target.result.split(",")[1];
+    mostrarProc("Leyendo la planilla...","La IA está extrayendo los pedidos de la foto");
+    try{
+      const r=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",max_tokens:1000,
+          messages:[{role:"user",content:[
+            {type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},
+            {type:"text",text:`Extraé todos los pedidos de esta planilla de envíos. Devolvé SOLO JSON válido sin texto extra ni backticks:\n{"pedidos":[{"id":"nro","nombre":"nombre","bultos":1,"valor":12345,"notas":""}]}\nReglas: valor sin $ ni puntos = número entero. Ignorá filas con "Enviar no" o sin número de pedido.`}
+          ]}]
+        })
+      });
+      const d=await r.json();
+      const txt=d.content[0].text.replace(/```json|```/g,"").trim();
+      const parsed=JSON.parse(txt);
+      pedidos=parsed.pedidos.map(p=>({...p,estado:"pendiente",email:"",localidad:"",direccion:"",celular:""}));
+      cerrarProc();
+      renderPreview();
+      document.getElementById("upload-panel").style.display="none";
+      document.getElementById("preview-panel").style.display="block";
+      setStep(2);
+      notif(`✓ ${pedidos.length} pedidos detectados`,"ok");
+    }catch(err){
+      cerrarProc();
+      notif("Error al leer la foto — revisá que la imagen sea clara","err");
+    }
+  };
+  reader.readAsDataURL(inp.files[0]);
+}
+
+function renderPreview(){
+  document.getElementById("tb-prev").innerHTML=pedidos.map((p,i)=>`<tr>
+    <td><input class="ifield" type="number" value="${p.bultos}" onchange="pedidos[${i}].bultos=+this.value" style="width:52px;padding:4px 6px"></td>
+    <td><input class="ifield" value="${p.id}" onchange="pedidos[${i}].id=this.value" style="width:86px;padding:4px 6px"></td>
+    <td><input class="ifield" value="${p.nombre}" onchange="pedidos[${i}].nombre=this.value" style="padding:4px 8px"></td>
+    <td><input class="ifield" type="number" value="${p.valor}" onchange="pedidos[${i}].valor=+this.value" style="width:105px;padding:4px 6px"></td>
+    <td><input class="ifield" value="${p.notas||''}" onchange="pedidos[${i}].notas=this.value" style="width:78px;padding:4px 6px"></td>
+    <td><button class="btn btn-icon btn-sm" title="Eliminar" onclick="pedidos.splice(${i},1);renderPreview()">🗑</button></td>
+  </tr>`).join("");
+  actualizarBadges();
+}
+
+function agregarFila(){
+  pedidos.push({id:"",nombre:"",bultos:1,valor:0,notas:"",estado:"pendiente",email:"",localidad:"",direccion:"",celular:""});
+  renderPreview();
+}
+
+async function confirmarPlanilla(){
+  if(!pedidos.length)return notif("No hay pedidos cargados","err");
+  if(!cfg.email)return notif("Configurá tu email primero","err");
+  if(!cfg.url1)return notif("Configurá la URL de Make para confirmación","err");
+  setStep(3);
+  mostrarProc(`Enviando ${pedidos.length} mails de confirmación...`,"Conectando con Make → Outlook");
+  let ok=0,err=0;
+  for(const p of pedidos){
+    const cli=buscarCliente(p.nombre);
+    const emailDest=cli?.email||p.email||cfg.email;
+    try{
+      await enviarWebhook(cfg.url1||WEBHOOK_CONF_DEFAULT,{
+        to:emailDest,
+        subject:`Tu pedido #${p.id} está listo`,
+        body:`Hola ${p.nombre.split(" ")[0]},\n\nTu pedido está listo para enviar. ¿Podés recibir mañana?\n\nRespondé este mail con SI o NO.\n\nGracias,\n${cfg.nombre||"Envíos"}`
+      });
+      ok++;
+    }catch{err++;}
+  }
+  cerrarProc();
+  notif(err===0?`✓ ${ok} mails de confirmación enviados`:err===pedidos.length?`Error: no se pudo conectar con Make. Revisá las URLs.`:`${ok} enviados, ${err} con error`,err===pedidos.length?"err":"ok");
+  renderPedidos();renderConfirmados();actualizarMetricas();actualizarBadges();
+  showTab("pedidos",document.querySelectorAll(".tab")[1]);
+}
+
+function buscarCliente(nombre){
+  if(!nombre)return null;
+  const palabras=nombre.toLowerCase().split(" ").filter(p=>p.length>2);
+  return clientes.find(c=>{
+    const cn=c.nombre.toLowerCase();
+    return palabras.some(p=>cn.includes(p));
+  });
+}
+
+function renderPedidos(){
+  const pills={pendiente:'<span class="pill pill-pend">Pendiente</span>',confirmado:'<span class="pill pill-conf">Confirmado</span>',despachado:'<span class="pill pill-desp">Despachado</span>',noconfirmado:'<span class="pill pill-no">No confirmó</span>'};
+  document.getElementById("tb-ped").innerHTML=pedidos.map((p,i)=>`<tr>
+    <td style="font-family:'DM Mono',monospace;font-size:12px">${p.id}</td>
+    <td>${p.nombre}</td><td>${p.bultos}</td>
+    <td>$${p.valor.toLocaleString("es-AR")}</td>
+    <td>${pills[p.estado]||p.estado}</td>
+    <td><div class="row-actions">${p.estado==="pendiente"?`
+      <button class="btn btn-icon btn-sm" title="Confirmó" onclick="cambiarEstado(${i},'confirmado')">✓</button>
+      <button class="btn btn-icon btn-sm" title="No confirmó" onclick="cambiarEstado(${i},'noconfirmado')">✗</button>`:""}
+    </div></td>
+  </tr>`).join("");
+}
+
+function cambiarEstado(i,est){
+  pedidos[i].estado=est;
+  if(est==="confirmado"){
+    const cli=buscarCliente(pedidos[i].nombre);
+    if(cli){
+      Object.assign(pedidos[i],{localidad:cli.localidad,direccion:cli.direccion,celular:cli.celular,email:cli.email});
+      notif(`✓ Datos de ${pedidos[i].nombre} cargados automáticamente`,"ok");
+    }else{
+      editCliIdx=i;
+      abrirModalCliente(pedidos[i].nombre);
+    }
+  }
+  renderPedidos();renderConfirmados();actualizarMetricas();actualizarBadges();
+}
+
+function abrirModalCliente(nombre){
+  document.getElementById("modal-cli-title").textContent=`Datos de ${nombre||"nuevo cliente"}`;
+  document.getElementById("cli-nombre").value=nombre||"";
+  ["cli-loc","cli-dir","cli-cel","cli-email"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("modal-cliente").style.display="block";
+}
+function abrirNuevoCliente(){editCliIdx=-1;abrirModalCliente("");}
+
+function guardarCliente(){
+  const c={
+    nombre:document.getElementById("cli-nombre").value.trim(),
+    localidad:document.getElementById("cli-loc").value.trim(),
+    direccion:document.getElementById("cli-dir").value.trim(),
+    celular:document.getElementById("cli-cel").value.trim(),
+    email:document.getElementById("cli-email").value.trim()
+  };
+  if(!c.nombre)return notif("El nombre es obligatorio","err");
+  const idx=clientes.findIndex(x=>x.nombre.toLowerCase()===c.nombre.toLowerCase());
+  if(idx>=0)clientes[idx]=c;else clientes.push(c);
+  localStorage.setItem("cli_db",JSON.stringify(clientes));
+  if(editCliIdx>=0){
+    Object.assign(pedidos[editCliIdx],{localidad:c.localidad,direccion:c.direccion,celular:c.celular,email:c.email});
+    editCliIdx=-1;
+  }
+  cerrarModal("modal-cliente");
+  renderPedidos();renderConfirmados();renderClientesTab();actualizarBadges();
+  notif("✓ Cliente guardado","ok");
+}
+
+function renderConfirmados(){
+  const lista=pedidos.filter(p=>p.estado==="confirmado"||p.estado==="despachado");
+  document.getElementById("b-conf").textContent=lista.length;
+  document.getElementById("tb-conf").innerHTML=lista.map(p=>{
+    const envio=calcEnvio(p.localidad,p.bultos);
+    const total=p.valor+envio;
+    const i=pedidos.indexOf(p);
+    return`<tr>
+      <td style="font-family:'DM Mono',monospace;font-size:12px">${p.id}</td>
+      <td>${p.nombre}</td>
+      <td>${p.localidad||'<span style="color:var(--text3)">—</span>'}</td>
+      <td style="font-weight:500">$${total.toLocaleString("es-AR")}</td>
+      <td><button class="btn btn-sm" onclick="verEtiqueta(${i})">🏷 Ver</button></td>
+      <td>${p.estado==="despachado"?'<span class="pill pill-desp">Enviado</span>':`<button class="btn btn-sm btn-green" onclick="despachar(${i})">✉ Enviar</button>`}</td>
+    </tr>`;
+  }).join("");
+}
+
+function verEtiqueta(i){
+  const p=pedidos[i];
+  const envio=calcEnvio(p.localidad,p.bultos);
+  const total=p.valor+envio;
+  const zona=getZona(p.localidad);
+  const id="etq-"+p.id;
+  if(!document.getElementById(id)){
+    const div=document.createElement("div");
+    div.id=id;div.className="etiqueta";
+    div.innerHTML=`
+      <div class="etiqueta-nombre">${p.nombre}</div>
+      <div>📍 ${p.localidad||"—"}${zona?" ("+zona+")":""}</div>
+      <div>🏠 ${p.direccion||"—"}</div>
+      <div>📱 ${p.celular||"—"}</div>
+      <div class="etiqueta-total">💰 $${total.toLocaleString("es-AR")}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">Pedido #${p.id} · ${p.bultos} bulto${p.bultos>1?"s":""} · Envío $${envio.toLocaleString("es-AR")}</div>`;
+    document.getElementById("etq-cont").appendChild(div);
+    document.getElementById("b-etq").textContent=document.getElementById("etq-cont").children.length;
+  }
+  showTab("etiquetas",null);
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+}
+
+function generarTodas(){
+  const lista=pedidos.filter(p=>p.estado==="confirmado"||p.estado==="despachado");
+  if(!lista.length)return notif("No hay confirmados aún","err");
+  lista.forEach(p=>verEtiqueta(pedidos.indexOf(p)));
+  showTab("etiquetas",document.querySelectorAll(".tab")[3]);
+  notif(`✓ ${lista.length} etiquetas generadas`,"ok");
+}
+
+async function despachar(i){
+  const p=pedidos[i];
+  if(!cfg.url2)return notif("Configurá la URL de Make para despacho","err");
+  const envio=calcEnvio(p.localidad,p.bultos);
+  const total=p.valor+envio;
+  try{
+    await enviarWebhook(cfg.url2||WEBHOOK_DESP_DEFAULT,{
+      to:p.email||cfg.email,
+      subject:`Tu pedido #${p.id} está en camino 🚚`,
+      body:`Hola ${p.nombre.split(" ")[0]},\n\nHoy enviamos tu pedido a ${p.localidad||"tu localidad"}.\nEl total a abonar con envío es $${total.toLocaleString("es-AR")}.\n\nGracias,\n${cfg.nombre||"Envíos"}`
+    });
+    pedidos[i].estado="despachado";
+    renderConfirmados();renderPedidos();actualizarMetricas();
+    notif(`✓ Mail de despacho enviado a ${p.nombre}`,"ok");
+  }catch(e){
+    notif("Error al enviar el mail de despacho — revisá Make","err");
+  }
+}
+
+async function despacharTodos(){
+  const lista=pedidos.filter(p=>p.estado==="confirmado");
+  if(!lista.length)return notif("No hay confirmados pendientes de despachar","err");
+  mostrarProc(`Enviando ${lista.length} mails de despacho...`,"Conectando con Make → Outlook");
+  for(const p of lista)await despachar(pedidos.indexOf(p));
+  cerrarProc();
+}
+
+function actualizarMetricas(){
+  document.getElementById("m-tot").textContent=pedidos.length;
+  document.getElementById("m-pend").textContent=pedidos.filter(p=>p.estado==="pendiente").length;
+  document.getElementById("m-conf").textContent=pedidos.filter(p=>p.estado==="confirmado").length;
+  document.getElementById("m-no").textContent=pedidos.filter(p=>p.estado==="noconfirmado").length;
+}
+
+function actualizarBadges(){
+  document.getElementById("b-pend").textContent=pedidos.filter(p=>p.estado==="pendiente").length;
+  document.getElementById("b-conf").textContent=pedidos.filter(p=>p.estado==="confirmado").length;
+}
+
+function renderClientesTab(){
+  document.getElementById("tb-cli").innerHTML=clientes.length===0
+    ?'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">No hay clientes guardados aún</td></tr>'
+    :clientes.map((c,i)=>`<tr>
+      <td style="font-weight:500">${c.nombre}</td>
+      <td>${c.localidad}</td><td>${c.direccion}</td>
+      <td>${c.celular}</td><td>${c.email}</td>
+      <td><button class="btn btn-icon btn-sm" onclick="editarCliente(${i})">✏</button></td>
+    </tr>`).join("");
+  document.getElementById("cli-count").textContent=clientes.length+" clientes guardados";
+}
+
+function editarCliente(i){
+  const c=clientes[i];editCliIdx=-2;
+  document.getElementById("modal-cli-title").textContent="Editar cliente";
+  document.getElementById("cli-nombre").value=c.nombre;
+  document.getElementById("cli-loc").value=c.localidad;
+  document.getElementById("cli-dir").value=c.direccion;
+  document.getElementById("cli-cel").value=c.celular;
+  document.getElementById("cli-email").value=c.email;
+  document.getElementById("modal-cliente").style.display="block";
+}
+
+document.getElementById("fecha-hoy").textContent=new Date().toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+if(!cfg.email||!cfg.url1)document.getElementById("cfg-banner").style.display="flex";
+renderClientesTab();
+</script>
+</body>
+</html>
