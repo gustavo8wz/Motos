@@ -425,8 +425,9 @@ async function procesarFoto(inp){
       setStep(2);
       notif(`✓ ${pedidos.length} pedidos detectados`,"ok");
     }catch(err){
-      cerrarProc();
-      notif("Error al leer la foto — revisá que la imagen sea clara","err");
+       console.error("ERROR REAL:", err);
+  cerrarProc();
+  notif("Error: " + err.message,"err")
     }
   };
   reader.readAsDataURL(inp.files[0]);
