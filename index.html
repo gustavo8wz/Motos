@@ -289,7 +289,7 @@
 </div>
 
 <div id="notif-cont"></div>
-
+<script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 const WEBHOOK_CONF_DEFAULT="https://hook.us2.make.com/3ot9hmtclykymf372u4xouw303trbc8s";
 const WEBHOOK_DESP_DEFAULT="https://hook.us2.make.com/tocsyspoc78cxlbocmg4619f0anuxo1q";
@@ -396,41 +396,49 @@ async function enviarWebhook(url,payload){
 }
 
 async function procesarFoto(inp){
-  if(!inp.files[0])return;
-  const reader=new FileReader();
-  reader.onload=async(e)=>{
-    const b64=e.target.result.split(",")[1];
-    mostrarProc("Leyendo la planilla...","La IA está extrayendo los pedidos de la foto");
-    try{
-      const r=await fetch("https://gentle-haze-a5f6.gustavorom19.workers.dev/",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          model:"claude-sonnet-4-20250514",max_tokens:1000,
-          messages:[{role:"user",content:[
-            {type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},
-            {type:"text",text:`Extraé todos los pedidos de esta planilla de envíos. Devolvé SOLO JSON válido sin texto extra ni backticks:\n{"pedidos":[{"id":"nro","nombre":"nombre","bultos":1,"valor":12345,"notas":""}]}\nReglas: valor sin $ ni puntos = número entero. Ignorá filas con "Enviar no" o sin número de pedido.`}
-          ]}]
-        })
-      });
-      const txtResp = await r.text();
-      console.log("RESPUESTA WORKER:", txtResp);
-      const d = JSON.parse(txtResp);;
-      const txt=d.content[0].text.replace(/```json|```/g,"").trim();
-      const parsed=JSON.parse(txt);
-      pedidos=parsed.pedidos.map(p=>({...p,estado:"pendiente",email:"",localidad:"",direccion:"",celular:""}));
-      cerrarProc();
-      renderPreview();
-      document.getElementById("upload-panel").style.display="none";
-      document.getElementById("preview-panel").style.display="block";
-      setStep(2);
-      notif(`✓ ${pedidos.length} pedidos detectados`,"ok");
-    }catch(err){
-       console.error("ERROR REAL:", err);
-  cerrarProc();
-  notif("Error: " + err.message,"err")
-    }
-  };
-  reader.readAsDataURL(inp.files[0]);
+  if(!inp.files[0]) return;
+
+  mostrarProc("Leyendo la planilla...","Procesando imagen localmente");
+
+  try{
+    const { data:{ text } } = await Tesseract.recognize(
+      inp.files[0],
+      "spa"
+    );
+
+    console.log("OCR:", text);
+
+    // ejemplo simple: separa líneas
+    const lineas = text.split("\n").filter(x=>x.trim());
+
+    pedidos = lineas
+      .map((l,i)=>({
+        id: "P"+(i+1),
+        nombre: l.trim(),
+        bultos: 1,
+        valor: 0,
+        notas:"",
+        estado:"pendiente",
+        email:"",
+        localidad:"",
+        direccion:"",
+        celular:""
+      }))
+      .slice(0,20);
+
+    cerrarProc();
+    renderPreview();
+    document.getElementById("upload-panel").style.display="none";
+    document.getElementById("preview-panel").style.display="block";
+    setStep(2);
+
+    notif(`✓ ${pedidos.length} líneas detectadas`,"ok");
+
+  } catch(err){
+    console.error(err);
+    cerrarProc();
+    notif("Error leyendo imagen","err");
+  }
 }
 
 function renderPreview(){
