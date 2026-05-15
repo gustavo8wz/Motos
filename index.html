@@ -402,7 +402,7 @@ async function procesarFoto(inp){
     const b64=e.target.result.split(",")[1];
     mostrarProc("Leyendo la planilla...","La IA está extrayendo los pedidos de la foto");
     try{
-      const r=await fetch("https://api.anthropic.com/v1/messages",{
+      const r=await fetch("https://gentle-haze-a5f6.gustavorom19.workers.dev/",{
         method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
           model:"claude-sonnet-4-20250514",max_tokens:1000,
