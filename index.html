@@ -412,7 +412,9 @@ async function procesarFoto(inp){
           ]}]
         })
       });
-      const d=await r.json();
+      const txtResp = await r.text();
+      console.log("RESPUESTA WORKER:", txtResp);
+      const d = JSON.parse(txtResp);;
       const txt=d.content[0].text.replace(/```json|```/g,"").trim();
       const parsed=JSON.parse(txt);
       pedidos=parsed.pedidos.map(p=>({...p,estado:"pendiente",email:"",localidad:"",direccion:"",celular:""}));
